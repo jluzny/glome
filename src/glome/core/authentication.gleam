@@ -1,6 +1,7 @@
 import gleam/result
-import nerf/websocket.{Connection, Text}
-import glome/core/error.{AuthenticationError, GlomeError}
+import nerf/websocket.{type Connection}
+import nerf/gun.{Text}
+import glome/core/error.{type GlomeError, AuthenticationError}
 import glome/core/serde
 import gleam/json.{object, string}
 
@@ -12,7 +13,7 @@ pub fn authenticate(
   connection: Connection,
   access_token: AccessToken,
 ) -> Result(String, GlomeError) {
-  try _ = authentication_phase_started(connection)
+  let _ = authentication_phase_started(connection)
   let auth_message =
     object([
       #("type", string("auth")),
@@ -21,46 +22,54 @@ pub fn authenticate(
     |> json.to_string
   websocket.send(connection, auth_message)
 
-  try Text(auth_response) =
+  use auth_response <- result.try(
     websocket.receive(connection, 500)
     |> result.map_error(fn(_) {
       AuthenticationError(
         "authentication failed! Auth result message not received!",
       )
-    })
+    }),
+  )
+  let assert Text(auth_response) = auth_response
 
-  try type_field =
+  use type_field <- result.try(
     serde.string_field(auth_response, "type")
     |> result.map_error(fn(_) {
       AuthenticationError(
         "authentication failed! Auth result message has no field [ type ]!",
       )
-    })
+    }),
+  )
 
   case type_field {
     "auth_ok" -> Ok("Authenticated connection established")
     "auth_invalid" -> Error(AuthenticationError("Invalid authentication"))
+    _ ->
+      Error(AuthenticationError("Something went wrong. Authentication failed!"))
   }
 }
 
 fn authentication_phase_started(
   connection: Connection,
 ) -> Result(String, GlomeError) {
-  try Text(initial_message) =
+  use initial_message <- result.try(
     websocket.receive(connection, 500)
     |> result.map_error(fn(_) {
       AuthenticationError(
         "could not start auth phase! Auth message not received!",
       )
-    })
+    }),
+  )
+  let assert Text(initial_message) = initial_message
 
-  try auth_required =
+  use auth_required <- result.try(
     serde.string_field(initial_message, "type")
     |> result.map_error(fn(_) {
       AuthenticationError(
         "could not start auth phase! Auth message has no field [ type ]!",
       )
-    })
+    }),
+  )
 
   case auth_required {
     "auth_required" -> Ok(auth_required)

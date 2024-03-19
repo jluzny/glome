@@ -1,7 +1,7 @@
 import gleam/string
 import gleam/result
-import gleam/dynamic.{DecodeError, Dynamic, string}
-import glome/homeassistant/domain.{Domain}
+import gleam/dynamic.{type DecodeError, type Dynamic, DecodeError, string}
+import glome/homeassistant/domain.{type Domain}
 
 pub type EntityId {
   EntityId(domain: Domain, object_id: String)
@@ -19,18 +19,18 @@ fn decode_entity_id(
 ) -> Result(#(String, String), List(DecodeError)) {
   case string.split(entity_id, ".") {
     [_] ->
-      Error(DecodeError(
-        expected: "domain.object_id",
-        found: entity_id,
-        path: [],
-      ))
+      Error(
+        DecodeError(expected: "domain.object_id", found: entity_id, path: []),
+      )
     [domain, object_id] -> Ok(#(domain, object_id))
     [_, _, ..] ->
-      Error(DecodeError(
-        expected: "domain.object_id",
-        found: entity_id,
-        path: [],
-      ))
+      Error(
+        DecodeError(expected: "domain.object_id", found: entity_id, path: []),
+      )
+    [] ->
+      Error(
+        DecodeError(expected: "domain.object_id", found: entity_id, path: []),
+      )
   }
   |> result.map_error(fn(error) { [error] })
 }

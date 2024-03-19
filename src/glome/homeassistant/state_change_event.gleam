@@ -1,10 +1,10 @@
-import gleam/dynamic.{Dynamic, field, optional}
-import gleam/option.{Option}
+import gleam/dynamic.{type Dynamic, field, optional}
+import gleam/option.{type Option}
 import gleam/result
 import glome/core/serde
-import glome/core/error.{GlomeError}
-import glome/homeassistant/entity_id.{EntityId}
-import glome/homeassistant/state.{State}
+import glome/core/error.{type GlomeError}
+import glome/homeassistant/entity_id.{type EntityId}
+import glome/homeassistant/state.{type State}
 
 pub type StateChangeEvent {
   StateChangeEvent(
@@ -23,9 +23,11 @@ pub fn decode(json_string: String) -> Result(StateChangeEvent, GlomeError) {
 
 fn decoder(data: Dynamic) -> Result(StateChangeEvent, GlomeError) {
   let entity_id_decoder = field("entity_id", entity_id.decoder)
-  try entity_id =
+
+  use entity_id <- result.try(
     entity_id_decoder(data)
-    |> error.map_decode_errors
+    |> error.map_decode_errors,
+  )
 
   data
   |> dynamic.decode3(

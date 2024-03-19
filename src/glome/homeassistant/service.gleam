@@ -1,9 +1,9 @@
-import gleam/option.{Option}
+import gleam/option.{type Option}
 import gleam/http.{Post}
-import glome/homeassistant/domain.{Domain}
-import glome/homeassistant/entity_id.{EntityId}
-import glome/homeassistant/environment.{Configuration}
-import glome/core/error.{GlomeError}
+import glome/homeassistant/domain.{type Domain}
+import glome/homeassistant/entity_id.{type EntityId}
+import glome/homeassistant/environment.{type Configuration}
+import glome/core/error.{type GlomeError}
 import glome/core/ha_client
 
 pub type Service {

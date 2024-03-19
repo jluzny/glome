@@ -1,7 +1,7 @@
-import gleam/dynamic.{Dynamic, dynamic, string}
+import gleam/dynamic.{type Dynamic, dynamic, string}
 import gleam/result
 import gleam/string
-import glome/core/error.{GlomeError}
+import glome/core/error.{type GlomeError}
 import gleam/json
 
 pub fn decode_to_dynamic(json: String) -> Result(Dynamic, GlomeError) {
@@ -34,6 +34,7 @@ pub fn get_field_by_path(
       |> dynamic.field(x, dynamic)
       |> error.map_decode_errors
       |> result.then(get_field_by_path(_, string.join(xs, ".")))
+    [] -> panic as "Invalid path"
   }
 }
 

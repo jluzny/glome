@@ -1,27 +1,30 @@
-import gleam/dynamic.{DecodeError, Dynamic, field, string}
+import gleam/dynamic.{type DecodeError, type Dynamic, field, string}
 import gleam/result
 import gleam/option.{None}
 import gleam/http.{Get}
-import glome/core/error.{GlomeError}
+import glome/core/error.{type GlomeError}
 import glome/core/serde
 import glome/core/ha_client
 import glome/homeassistant/domain.{
-  BinarySensor, Cover, Domain, InputBoolean, Light, MediaPlayer, Sensor,
+  type Domain, BinarySensor, Cover, InputBoolean, Light, MediaPlayer, Sensor,
 }
 import glome/homeassistant/attributes.{
-  AQISensor, Attributes, BatteryCharging, BatterySensor, CarbonDioxideSensor, CarbonMonoxideSensor,
-  ColdSensor, ConnectivitySensor, CurrentSensor, DateSensor, DoorSensor, EnergySensor,
-  FrequencySensor, GarageDoorSensor, GasSensor, HeatSensor, HumiditySensor, IlluminanceSensor,
-  LightSensor, LockSensor, MoistureSensor, MonetarySensor, MotionSensor, MovingSensor,
-  NitrogenDioxideSensor, NitrogenMonoxideSensor, NitrousOxideSensor, OccupancySensor,
-  OpeningSensor, OzoneSensor, PM10Sensor, PM1Sensor, PM25Sensor, PlugSensor, PowerFactorSensor,
-  PowerSensor, PresenceSensor, PressureSensor, ProblemSensor, RunningSensor, SafetySensor,
-  SignalStrengthSensor, SmokeSensor, SoundSensor, SulphurDioxideSensor, TV, TamperSensor,
-  TemperatureSensor, TimestampSensor, UnknownDeviceClass, UpdateSensor, VibrationSensor,
-  VolatileOrganicCompoundsSensor, VoltageSensor, WindowSensor,
+  type Attributes, AQISensor, BatteryCharging, BatterySensor,
+  CarbonDioxideSensor, CarbonMonoxideSensor, ColdSensor, ConnectivitySensor,
+  CurrentSensor, DateSensor, DoorSensor, EnergySensor, FrequencySensor,
+  GarageDoorSensor, GasSensor, HeatSensor, HumiditySensor, IlluminanceSensor,
+  LightSensor, LockSensor, MoistureSensor, MonetarySensor, MotionSensor,
+  MovingSensor, NitrogenDioxideSensor, NitrogenMonoxideSensor,
+  NitrousOxideSensor, OccupancySensor, OpeningSensor, OzoneSensor, PM10Sensor,
+  PM1Sensor, PM25Sensor, PlugSensor, PowerFactorSensor, PowerSensor,
+  PresenceSensor, PressureSensor, ProblemSensor, RunningSensor, SafetySensor,
+  SignalStrengthSensor, SmokeSensor, SoundSensor, SulphurDioxideSensor, TV,
+  TamperSensor, TemperatureSensor, TimestampSensor, UnknownDeviceClass,
+  UpdateSensor, VibrationSensor, VolatileOrganicCompoundsSensor, VoltageSensor,
+  WindowSensor,
 }
-import glome/homeassistant/entity_id.{EntityId}
-import glome/homeassistant/environment.{Configuration}
+import glome/homeassistant/entity_id.{type EntityId}
+import glome/homeassistant/environment.{type Configuration}
 
 pub type StateValue {
   //Sensor 
@@ -138,8 +141,11 @@ pub fn get(
 }
 
 pub fn decode(data: Dynamic, domain: Domain) -> Result(State, List(DecodeError)) {
-  try state_value_string = field("state", string)(data)
-  try attributes = field("attributes", attributes.decoder(_, domain))(data)
+  use state_value_string <- result.try(field("state", string)(data))
+
+  use attributes <- result.try(
+    field("attributes", attributes.decoder(_, domain))(data),
+  )
 
   case domain {
     MediaPlayer -> map_to_media_player_state(state_value_string, attributes)

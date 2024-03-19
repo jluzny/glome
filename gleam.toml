@@ -1,5 +1,5 @@
 name = "glome"
-version = "0.3.0"
+version = "0.4.0"
 
 # Fill out these fields if you intend to generate HTML documentation or publish
 # your project to the Hex package manager.
@@ -8,14 +8,16 @@ licences = ["Apache-2.0"]
 description = "A Gleam library to write and run Home Assistant automations."
 repository = { type = "github", user = "dennisschroeder", repo = "glome" }
 links = [{ title = "Website", href = "https://gleam.run" }]
+gleam = ">= 0.32.0"
 
 [dependencies]
-gleam_stdlib = "~> 0.22"
-nerf = "~> 0.1"
-gleam_otp = "~> 0.3"
-gleam_httpc = "~> 1.1"
-gleam_erlang = "~> 0.5"
-gleam_json = "~> 0.4"
+gleam_stdlib = "< 0.35.0"
+nerf = "~> 0.4"
+gleam_otp = "~> 0.10.0"
+gleam_http = "~> 3.6"
+gleam_httpc = "~> 2.1"
+gleam_erlang = "~> 0.24"
+gleam_json = "~> 1.0"
 
 [dev-dependencies]
-gleeunit = "~> 0.5"
+gleeunit = "~> 1.0"

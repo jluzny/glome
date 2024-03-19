@@ -73,5 +73,5 @@ pub fn to_string(domain: Domain) -> String {
   }
 }
 
-external fn do_to_string(Domain) -> String =
-  "erlang" "atom_to_binary"
+@external(erlang, "erlang", "atom_to_binary")
+pub fn do_to_string(domain: Domain) -> String

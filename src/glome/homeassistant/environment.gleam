@@ -1,7 +1,7 @@
 import gleam/result
 import gleam/int
-import gleam/option.{Option}
-import glome/core/authentication.{AccessToken}
+import gleam/option.{type Option}
+import glome/core/authentication.{type AccessToken, AccessToken}
 
 pub type Configuration {
   Configuration(host: String, port: Int, access_token: AccessToken)
@@ -30,5 +30,5 @@ pub fn get_ha_supervisor_token() -> Option(AccessToken) {
   |> option.map(AccessToken)
 }
 
-pub external fn get_env(String) -> Result(String, Nil) =
-  "system" "get_var"
+@external(erlang, "system", "get_var")
+pub fn get_env(var: String) -> Result(String, Nil)

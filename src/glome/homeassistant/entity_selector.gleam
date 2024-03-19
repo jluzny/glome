@@ -1,4 +1,4 @@
-import glome/homeassistant/domain.{Domain}
+import glome/homeassistant/domain.{type Domain}
 
 pub type EntitySelector {
   EntitySelector(domain: Domain, object_id: Selector)

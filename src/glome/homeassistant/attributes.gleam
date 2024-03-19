@@ -1,9 +1,11 @@
-import gleam/dynamic.{DecodeError, Dynamic, field, optional, string}
+import gleam/dynamic.{type DecodeError, type Dynamic, field, optional, string}
 import gleam/result
-import gleam/option.{Option}
+import gleam/option.{type Option}
 import glome/core/serde
-import glome/core/error.{GlomeError}
-import glome/homeassistant/domain.{BinarySensor, Domain, MediaPlayer, Sensor}
+import glome/core/error.{type GlomeError}
+import glome/homeassistant/domain.{
+  type Domain, BinarySensor, MediaPlayer, Sensor,
+}
 
 pub type DeviceClass {
   //MediaPlayer
@@ -90,7 +92,7 @@ pub fn decoder(
     |> result.unwrap("unknown_device_class")
     |> map_device_class_by_domain(domain)
 
-  try friendly_name = field("friendly_name", optional(string))(data)
+  use friendly_name <- result.try(field("friendly_name", optional(string))(data))
 
   Attributes(
     friendly_name: friendly_name,
