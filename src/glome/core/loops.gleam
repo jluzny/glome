@@ -1,6 +1,6 @@
-import glome/core/error.{type GlomeError, LoopNil}
-import gleam/result
 import gleam/io
+import gleam/result
+import glome/core/error.{type GlomeError, LoopNil}
 
 pub fn start_state_change_event_publisher(
   loop: fn() -> Result(Nil, GlomeError),

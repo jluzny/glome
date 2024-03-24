@@ -1,9 +1,10 @@
+import gleam/io
+import gleam/json.{object, string}
 import gleam/result
-import nerf/websocket.{type Connection}
-import nerf/gun.{Text}
 import glome/core/error.{type GlomeError, AuthenticationError}
 import glome/core/serde
-import gleam/json.{object, string}
+import nerf/gun.{Text}
+import nerf/websocket.{type Connection}
 
 pub type AccessToken {
   AccessToken(value: String)
@@ -42,7 +43,9 @@ pub fn authenticate(
   )
 
   case type_field {
-    "auth_ok" -> Ok("Authenticated connection established")
+    "auth_ok" -> {
+      Ok(io.debug("authentication.authenticate: authetication successful!"))
+    }
     "auth_invalid" -> Error(AuthenticationError("Invalid authentication"))
     _ ->
       Error(AuthenticationError("Something went wrong. Authentication failed!"))

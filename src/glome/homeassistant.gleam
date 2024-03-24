@@ -1,27 +1,27 @@
-import gleam/option.{type Option, Some}
-import gleam/result
-import gleam/io
-import gleam/list
 import gleam/erlang/process.{type Subject}
+import gleam/io
+import gleam/json.{array, int, object, string}
+import gleam/list
+import gleam/option.{type Option, Some}
 import gleam/regex
-import gleam/json.{array, object, string}
-import nerf/websocket.{type Connection}
-import nerf/gun.{Text}
+import gleam/result
 import glome/core/authentication
+import glome/core/error.{type GlomeError, LoopNil}
 import glome/core/loops
 import glome/core/util
-import glome/core/error.{type GlomeError, LoopNil}
-import glome/homeassistant/state.{type State}
-import glome/homeassistant/state_change_event.{type StateChangeEvent}
+import glome/homeassistant/domain.{type Domain}
 import glome/homeassistant/entity_id.{type EntityId}
 import glome/homeassistant/entity_selector.{
   type EntitySelector, All, ObjectId, Regex,
 }
-import glome/homeassistant/domain.{type Domain}
 import glome/homeassistant/environment.{type Configuration}
 import glome/homeassistant/service.{
   type Service, type Target, Area, Device, Entity,
 }
+import glome/homeassistant/state.{type State}
+import glome/homeassistant/state_change_event.{type StateChangeEvent}
+import nerf/gun.{Text}
+import nerf/websocket.{type Connection}
 
 pub opaque type HomeAssistant {
   HomeAssistant(handlers: StateChangeHandlers, config: Configuration)
@@ -73,6 +73,9 @@ pub fn connect(
   let handlers: StateChangeHandlers = conn_handler(home_assistant).handlers
 
   loops.start_state_change_event_receiver(fn() {
+    io.debug(
+      "homeassistant.start_state_change_event_receiver: Waiting for state change events",
+    )
     let state_changed_event: StateChangeEvent = process.select_forever(selector)
 
     list.filter(handlers, fn(entry: StateChangeHandlersEntry) {
@@ -143,8 +146,8 @@ pub fn call_service(
   domain: Domain,
   service: Service,
   targets: Option(List(Target)),
-  data: Option(String),
 ) -> Result(String, GlomeError) {
+  //data: Option(String),
   let extract_target_value = fn(target: Target) {
     case target {
       Entity(value) -> entity_id.to_string(value)
@@ -206,21 +209,26 @@ fn start_state_loop(
   let subscribe_state_change_events =
     json.to_string(
       object([
-        #("id", string("1")),
+        #("id", int(1)),
         #("type", string("subscribe_events")),
         #("event_type", string("state_changed")),
       ]),
     )
 
   websocket.send(connection, subscribe_state_change_events)
-  case websocket.receive(connection, 500) {
-    Ok(Text(message)) -> Ok(io.debug(message))
-    Error(_) | _ -> Error(LoopNil)
-  }
+  let assert Ok(Text(message)) =
+    result.map_error(websocket.receive(connection, 500), fn(_) {
+      Error(LoopNil)
+    })
+  io.debug(
+    "homeassistant.start_state_loop: Subscribed to state change events: "
+    <> message,
+  )
+
   loops.start_state_change_event_publisher(fn() {
     case websocket.receive(connection, 500) {
       Ok(Text(message)) -> publish_state_change_event(subject, message)
-      Error(_) | _ -> Error(LoopNil)
+      _ -> Error(LoopNil)
     }
   })
   Ok(Nil)
@@ -232,5 +240,9 @@ fn publish_state_change_event(
 ) -> Result(Nil, GlomeError) {
   use state_change_event <- result.try(state_change_event.decode(message))
   process.send(subject, state_change_event)
+  io.debug(
+    "homeassistant.publish_state_change_event: Sent state change event to subscribers:"
+    <> message,
+  )
   Ok(Nil)
 }

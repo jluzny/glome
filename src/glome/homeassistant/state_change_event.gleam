@@ -1,8 +1,8 @@
 import gleam/dynamic.{type Dynamic, field, optional}
 import gleam/option.{type Option}
 import gleam/result
-import glome/core/serde
 import glome/core/error.{type GlomeError}
+import glome/core/serde
 import glome/homeassistant/entity_id.{type EntityId}
 import glome/homeassistant/state.{type State}
 

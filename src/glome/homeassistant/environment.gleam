@@ -1,6 +1,6 @@
-import gleam/result
 import gleam/int
 import gleam/option.{type Option}
+import gleam/result
 import glome/core/authentication.{type AccessToken, AccessToken}
 
 pub type Configuration {
