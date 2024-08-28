@@ -1,8 +1,6 @@
 import gleam/dynamic.{type DecodeError, type Dynamic}
 import gleam/io
-import gleam/json
 import gleam/option.{type Option, Some}
-import gleam/result
 import gleeunit/should
 import glome/core/authentication.{AccessToken}
 import glome/homeassistant
@@ -43,13 +41,13 @@ pub fn test_light_entity_change_integration() {
     case decode_light_entity_change(event) {
       Ok(light_change) -> {
         // In a real scenario, you might want to do something with light_change
-        // For now, we'll just return Ok(Nil)
-        Ok(Nil)
+        // For now, we'll just return Ok(light_change)
+        Ok(light_change)
       }
       Error(err) -> {
         io.debug("Failed to decode light entity change")
         io.debug(err)
-        Error(Nil)
+        Error(err)
       }
     }
   }
@@ -69,15 +67,14 @@ pub fn test_light_entity_change_integration() {
   let mock_event = dynamic.from([
     #("entity_id", dynamic.from("light.test_light")),
     #("state", dynamic.from("on")),
-    #("brightness", dynamic.from(200)),
-    #("rgb_color", dynamic.from([100, 150, 200])),
+    #("attributes", dynamic.from([
+      #("brightness", dynamic.from(200)),
+      #("rgb_color", dynamic.from([100, 150, 200])),
+    ])),
   ])
 
   // Trigger the state change handler with the mock event
-  let assert Ok(Nil) = state_change_handler(mock_event, ha)
-
-  // For testing purposes, we'll decode the mock event directly
-  let assert Ok(light_change) = decode_light_entity_change(mock_event)
+  let assert Ok(light_change) = state_change_handler(mock_event, ha)
 
   // Assert the test results
   light_change.entity_id |> should.equal("light.test_light")
@@ -89,8 +86,10 @@ pub fn test_light_entity_change_integration() {
   let invalid_event = dynamic.from([
     #("entity_id", dynamic.from("light.test_light")),
     #("state", dynamic.from("invalid")),
-    #("brightness", dynamic.from("not_a_number")),
+    #("attributes", dynamic.from([
+      #("brightness", dynamic.from("not_a_number")),
+    ])),
   ])
 
-  let assert Error(Nil) = state_change_handler(invalid_event, ha)
+  let assert Error(_) = state_change_handler(invalid_event, ha)
 }
