@@ -1,14 +1,12 @@
 import gleam/dynamic.{type DecodeError, type Dynamic}
-import gleam/erlang/process
+import gleam/erlang/process.{type Subject}
 import gleam/io
 import gleam/json
 import gleam/option.{type Option, Some}
 import gleeunit/should
 import glome/core/authentication.{AccessToken}
-import glome/core/error.{type GlomeError}
-import glome/homeassistant.{
-  type HomeAssistant, type StateChangeEvent, type StateChangeHandler,
-}
+import glome/core/error
+import glome/homeassistant
 import glome/homeassistant/domain.{Light}
 import glome/homeassistant/entity_selector.{All, EntitySelector}
 import glome/homeassistant/environment.{Configuration}
@@ -45,23 +43,23 @@ pub fn test_light_entity_change_integration() {
   let channel = process.new_channel()
 
   // Define the state change handler
-  let state_change_handler: StateChangeHandler = fn(event, _ha) {
+  let state_change_handler = fn(event, _ha) {
     case decode_light_entity_change(event.new_state) {
       Ok(light_change) -> {
         // Send the light change to the test channel
-        process.send(channel.sender, light_change)
+        process.send(channel, light_change)
         Ok(Nil)
       }
       Error(err) -> {
         io.debug("Failed to decode light entity change")
         io.debug(err)
-        Error(glome / core / error.DecodeError(err))
+        Error(error.DecodeError(err))
       }
     }
   }
 
   // Connect to Home Assistant (this will be mocked in the actual test environment)
-  let assert Ok(ha) =
+  let assert Ok(_ha) =
     homeassistant.connect(config, fn(ha) {
       // Add the state change handler for light entities
       let ha =
@@ -73,35 +71,35 @@ pub fn test_light_entity_change_integration() {
 
       // Simulate a light entity change event
       let mock_event =
-        StateChangeEvent(
-          data: dynamic.from_json(
-            json.object([
-              #("entity_id", json.string("light.test_light")),
-              #("state", json.string("on")),
-              #("brightness", json.int(200)),
-              #(
-                "rgb_color",
-                json.array([json.int(100), json.int(150), json.int(200)]),
-              ),
-            ]),
-          ),
-          new_state: dynamic.from_json(
-            json.object([
-              #("entity_id", json.string("light.test_light")),
-              #("state", json.string("on")),
-              #("brightness", json.int(200)),
-              #(
-                "rgb_color",
-                json.array([json.int(100), json.int(150), json.int(200)]),
-              ),
-            ]),
-          ),
-          old_state: dynamic.from_json(
-            json.object([
-              #("entity_id", json.string("light.test_light")),
-              #("state", json.string("off")),
-            ]),
-          ),
+        homeassistant.StateChangeEvent(
+          data: json.object([
+            #("entity_id", json.string("light.test_light")),
+            #("state", json.string("on")),
+            #("brightness", json.int(200)),
+            #(
+              "rgb_color",
+              json.array([json.int(100), json.int(150), json.int(200)]),
+            ),
+          ])
+          |> json.to_string
+          |> dynamic.from_json,
+          new_state: json.object([
+            #("entity_id", json.string("light.test_light")),
+            #("state", json.string("on")),
+            #("brightness", json.int(200)),
+            #(
+              "rgb_color",
+              json.array([json.int(100), json.int(150), json.int(200)]),
+            ),
+          ])
+          |> json.to_string
+          |> dynamic.from_json,
+          old_state: json.object([
+            #("entity_id", json.string("light.test_light")),
+            #("state", json.string("off")),
+          ])
+          |> json.to_string
+          |> dynamic.from_json,
         )
 
       // Trigger the state change handler with the mock event
@@ -111,20 +109,21 @@ pub fn test_light_entity_change_integration() {
     })
 
   // Receive the light change from the channel
-  case process.receive(channel.receiver, 1000) {
+  case process.receive(channel, 1000) {
     Ok(light_change) -> {
-      light_change.entity_id
+      let assert LightEntityChange(entity_id, state, brightness, rgb_color) = light_change
+      entity_id
       |> should.equal("light.test_light")
 
-      light_change.state
+      state
       |> should.equal("on")
 
-      light_change.brightness
+      brightness
       |> should.equal(Some(200))
 
-      light_change.rgb_color
+      rgb_color
       |> should.equal(Some(#(100, 150, 200)))
     }
-    Error(_) -> should.fail()
+    Error(_) -> should.fail("Failed to receive light change event")
   }
 }
