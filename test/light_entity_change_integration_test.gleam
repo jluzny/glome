@@ -66,34 +66,31 @@ pub fn test_light_entity_change_integration() {
     )
 
   // Simulate a light entity change event
-  let mock_event =
-    json.object([
-      #("entity_id", json.string("light.test_light")),
-      #("state", json.string("on")),
-      #("brightness", json.int(200)),
-      #("rgb_color", json.array([json.int(100), json.int(150), json.int(200)])),
-    ])
-    |> json.to_string
-    |> json.decode(dynamic.decoder)
-    |> result.unwrap(dynamic.from(Nil))
+  let mock_event = dynamic.from([
+    #("entity_id", dynamic.from("light.test_light")),
+    #("state", dynamic.from("on")),
+    #("brightness", dynamic.from(200)),
+    #("rgb_color", dynamic.from([100, 150, 200])),
+  ])
 
   // Trigger the state change handler with the mock event
-  let assert Ok(_) = state_change_handler(mock_event, ha)
+  let assert Ok(Nil) = state_change_handler(mock_event, ha)
 
   // For testing purposes, we'll decode the mock event directly
   let assert Ok(light_change) = decode_light_entity_change(mock_event)
 
   // Assert the test results
-  let LightEntityChange(entity_id, state, brightness, rgb_color) = light_change
-  entity_id
-  |> should.equal("light.test_light")
+  light_change.entity_id |> should.equal("light.test_light")
+  light_change.state |> should.equal("on")
+  light_change.brightness |> should.equal(Some(200))
+  light_change.rgb_color |> should.equal(Some(#(100, 150, 200)))
 
-  state
-  |> should.equal("on")
+  // Test with invalid data
+  let invalid_event = dynamic.from([
+    #("entity_id", dynamic.from("light.test_light")),
+    #("state", dynamic.from("invalid")),
+    #("brightness", dynamic.from("not_a_number")),
+  ])
 
-  brightness
-  |> should.equal(Some(200))
-
-  rgb_color
-  |> should.equal(Some(#(100, 150, 200)))
+  let assert Error(Nil) = state_change_handler(invalid_event, ha)
 }
