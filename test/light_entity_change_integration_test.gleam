@@ -21,31 +21,30 @@ pub type LightEntityChange {
 fn decode_light_entity_change(
   data: Dynamic,
 ) -> Result(LightEntityChange, List(DecodeError)) {
-  let decode_attributes = fn(data) {
+  let decode_attributes = fn(attributes) {
     dynamic.decode2(
       fn(brightness, rgb_color) { #(brightness, rgb_color) },
-      dynamic.field("brightness", dynamic.optional(dynamic.int)),
-      dynamic.field(
+      dynamic.optional(dynamic.field("brightness", dynamic.int)),
+      dynamic.optional(dynamic.field(
         "rgb_color",
-        dynamic.optional(dynamic.tuple3(dynamic.int, dynamic.int, dynamic.int)),
-      ),
-    )(data)
+        dynamic.tuple3(dynamic.int, dynamic.int, dynamic.int),
+      )),
+    )(attributes)
   }
 
   dynamic.decode3(
-    LightEntityChange,
+    fn(entity_id, state, attributes) {
+      LightEntityChange(
+        entity_id: entity_id,
+        state: state,
+        brightness: attributes.0,
+        rgb_color: attributes.1,
+      )
+    },
     dynamic.field("entity_id", dynamic.string),
     dynamic.field("state", dynamic.string),
     dynamic.field("attributes", decode_attributes),
   )(data)
-  |> result.map(fn(light_change) {
-    LightEntityChange(
-      entity_id: light_change.0,
-      state: light_change.1,
-      brightness: light_change.2.0,
-      rgb_color: light_change.2.1,
-    )
-  })
 }
 
 pub fn test_light_entity_change_integration() {
