@@ -37,7 +37,7 @@ fn decode_light_entity_change(
   )(data)
 }
 
-pub fn light_entity_change_integration_test() {
+pub fn test_light_entity_change_integration() {
   // Create a mock configuration
   let config = Configuration("localhost", 8123, AccessToken("mock_token"))
 
