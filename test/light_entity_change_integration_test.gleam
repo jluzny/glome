@@ -6,7 +6,9 @@ import gleam/option.{type Option, Some}
 import gleeunit/should
 import glome/core/authentication.{AccessToken}
 import glome/core/error.{type GlomeError}
-import glome/homeassistant.{type HomeAssistant, type StateChangeEvent, type StateChangeHandler}
+import glome/homeassistant.{
+  type HomeAssistant, type StateChangeEvent, type StateChangeHandler,
+}
 import glome/homeassistant/domain.{Light}
 import glome/homeassistant/entity_selector.{All, EntitySelector}
 import glome/homeassistant/environment.{Configuration}
@@ -53,7 +55,7 @@ pub fn test_light_entity_change_integration() {
       Error(err) -> {
         io.debug("Failed to decode light entity change")
         io.debug(err)
-        Error(glome/core/error.DecodeError(err))
+        Error(glome / core / error.DecodeError(err))
       }
     }
   }
@@ -62,31 +64,45 @@ pub fn test_light_entity_change_integration() {
   let assert Ok(ha) =
     homeassistant.connect(config, fn(ha) {
       // Add the state change handler for light entities
-      let ha = homeassistant.add_handler(
-        to: ha,
-        for: EntitySelector(Light, All),
-        handler: state_change_handler,
-      )
+      let ha =
+        homeassistant.add_handler(
+          to: ha,
+          for: EntitySelector(Light, All),
+          handler: state_change_handler,
+        )
 
       // Simulate a light entity change event
-      let mock_event = StateChangeEvent(
-        data: dynamic.from_json(json.object([
-          #("entity_id", json.string("light.test_light")),
-          #("state", json.string("on")),
-          #("brightness", json.int(200)),
-          #("rgb_color", json.array([json.int(100), json.int(150), json.int(200)])),
-        ])),
-        new_state: dynamic.from_json(json.object([
-          #("entity_id", json.string("light.test_light")),
-          #("state", json.string("on")),
-          #("brightness", json.int(200)),
-          #("rgb_color", json.array([json.int(100), json.int(150), json.int(200)])),
-        ])),
-        old_state: dynamic.from_json(json.object([
-          #("entity_id", json.string("light.test_light")),
-          #("state", json.string("off")),
-        ])),
-      )
+      let mock_event =
+        StateChangeEvent(
+          data: dynamic.from_json(
+            json.object([
+              #("entity_id", json.string("light.test_light")),
+              #("state", json.string("on")),
+              #("brightness", json.int(200)),
+              #(
+                "rgb_color",
+                json.array([json.int(100), json.int(150), json.int(200)]),
+              ),
+            ]),
+          ),
+          new_state: dynamic.from_json(
+            json.object([
+              #("entity_id", json.string("light.test_light")),
+              #("state", json.string("on")),
+              #("brightness", json.int(200)),
+              #(
+                "rgb_color",
+                json.array([json.int(100), json.int(150), json.int(200)]),
+              ),
+            ]),
+          ),
+          old_state: dynamic.from_json(
+            json.object([
+              #("entity_id", json.string("light.test_light")),
+              #("state", json.string("off")),
+            ]),
+          ),
+        )
 
       // Trigger the state change handler with the mock event
       let assert Ok(_) = state_change_handler(mock_event, ha)
