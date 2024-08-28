@@ -81,8 +81,8 @@ pub fn test_light_entity_change_integration() {
               json.array([json.int(100), json.int(150), json.int(200)]),
             ),
           ])
-          |> json.to_string
-          |> dynamic.from_json,
+            |> json.to_string
+            |> dynamic.from_json,
           new_state: json.object([
             #("entity_id", json.string("light.test_light")),
             #("state", json.string("on")),
@@ -92,14 +92,14 @@ pub fn test_light_entity_change_integration() {
               json.array([json.int(100), json.int(150), json.int(200)]),
             ),
           ])
-          |> json.to_string
-          |> dynamic.from_json,
+            |> json.to_string
+            |> dynamic.from_json,
           old_state: json.object([
             #("entity_id", json.string("light.test_light")),
             #("state", json.string("off")),
           ])
-          |> json.to_string
-          |> dynamic.from_json,
+            |> json.to_string
+            |> dynamic.from_json,
         )
 
       // Trigger the state change handler with the mock event
@@ -111,7 +111,8 @@ pub fn test_light_entity_change_integration() {
   // Receive the light change from the channel
   case process.receive(channel, 1000) {
     Ok(light_change) -> {
-      let assert LightEntityChange(entity_id, state, brightness, rgb_color) = light_change
+      let assert LightEntityChange(entity_id, state, brightness, rgb_color) =
+        light_change
       entity_id
       |> should.equal("light.test_light")
 
