@@ -1,12 +1,13 @@
 import gleam/dynamic.{type DecodeError, type Dynamic}
 import gleam/io
-import gleam/option.{type Option, Some}
+import gleam/option.{type Option, Some, None}
 import gleeunit/should
 import glome/core/authentication.{AccessToken}
 import glome/homeassistant
 import glome/homeassistant/domain.{Light}
 import glome/homeassistant/entity_selector.{All, EntitySelector}
 import glome/homeassistant/environment.{Configuration}
+import gleam/result
 
 pub type LightEntityChange {
   LightEntityChange(
@@ -20,16 +21,31 @@ pub type LightEntityChange {
 fn decode_light_entity_change(
   data: Dynamic,
 ) -> Result(LightEntityChange, List(DecodeError)) {
-  dynamic.decode4(
+  let decode_attributes = fn(data) {
+    dynamic.decode2(
+      fn(brightness, rgb_color) { #(brightness, rgb_color) },
+      dynamic.field("brightness", dynamic.optional(dynamic.int)),
+      dynamic.field(
+        "rgb_color",
+        dynamic.optional(dynamic.tuple3(dynamic.int, dynamic.int, dynamic.int)),
+      ),
+    )(data)
+  }
+
+  dynamic.decode3(
     LightEntityChange,
     dynamic.field("entity_id", dynamic.string),
     dynamic.field("state", dynamic.string),
-    dynamic.field("brightness", dynamic.optional(dynamic.int)),
-    dynamic.field(
-      "rgb_color",
-      dynamic.optional(dynamic.tuple3(dynamic.int, dynamic.int, dynamic.int)),
-    ),
+    dynamic.field("attributes", decode_attributes),
   )(data)
+  |> result.map(fn(light_change) {
+    LightEntityChange(
+      entity_id: light_change.0,
+      state: light_change.1,
+      brightness: light_change.2.0,
+      rgb_color: light_change.2.1,
+    )
+  })
 }
 
 pub fn test_light_entity_change_integration() {
@@ -81,6 +97,21 @@ pub fn test_light_entity_change_integration() {
   light_change.state |> should.equal("on")
   light_change.brightness |> should.equal(Some(200))
   light_change.rgb_color |> should.equal(Some(#(100, 150, 200)))
+
+  // Test with partial data (missing brightness)
+  let partial_event = dynamic.from([
+    #("entity_id", dynamic.from("light.test_light")),
+    #("state", dynamic.from("off")),
+    #("attributes", dynamic.from([
+      #("rgb_color", dynamic.from([50, 100, 150])),
+    ])),
+  ])
+
+  let assert Ok(partial_light_change) = state_change_handler(partial_event, ha)
+  partial_light_change.entity_id |> should.equal("light.test_light")
+  partial_light_change.state |> should.equal("off")
+  partial_light_change.brightness |> should.equal(None)
+  partial_light_change.rgb_color |> should.equal(Some(#(50, 100, 150)))
 
   // Test with invalid data
   let invalid_event = dynamic.from([
