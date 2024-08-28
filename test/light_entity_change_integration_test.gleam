@@ -54,18 +54,12 @@ pub fn test_light_entity_change_integration() {
 
   // Define the state change handler
   let state_change_handler = fn(event: Dynamic, ha) {
-    case decode_light_entity_change(event) {
-      Ok(light_change) -> {
-        // In a real scenario, you might want to do something with light_change
-        // For now, we'll just return Ok(light_change)
-        Ok(light_change)
-      }
-      Error(err) -> {
-        io.debug("Failed to decode light entity change")
-        io.debug(err)
-        Error(err)
-      }
-    }
+    decode_light_entity_change(event)
+    |> result.map_error(fn(err) {
+      io.debug("Failed to decode light entity change")
+      io.debug(err)
+      err
+    })
   }
 
   // Connect to Home Assistant
