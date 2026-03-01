@@ -1,8 +1,8 @@
 import gleam/dynamic.{type Dynamic, dynamic, string}
+import gleam/json
 import gleam/result
 import gleam/string
 import glome/core/error.{type GlomeError}
-import gleam/json
 
 pub fn decode_to_dynamic(json: String) -> Result(Dynamic, GlomeError) {
   json

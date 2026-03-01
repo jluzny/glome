@@ -1,10 +1,10 @@
-import gleam/result
-import gleam/option.{type Option, None, Some}
-import gleam/io
-import gleam/string
-import gleam/httpc
 import gleam/http.{type Method, Get, Http, Post}
 import gleam/http/request
+import gleam/httpc
+import gleam/io
+import gleam/option.{type Option, None, Some}
+import gleam/result
+import gleam/string
 import glome/core/authentication
 import glome/core/error.{
   type GlomeError, BadRequest, CallServiceError, NotAllowedHttpMethod, NotFound,

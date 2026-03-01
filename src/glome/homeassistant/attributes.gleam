@@ -1,8 +1,8 @@
 import gleam/dynamic.{type DecodeError, type Dynamic, field, optional, string}
-import gleam/result
 import gleam/option.{type Option}
-import glome/core/serde
+import gleam/result
 import glome/core/error.{type GlomeError}
+import glome/core/serde
 import glome/homeassistant/domain.{
   type Domain, BinarySensor, MediaPlayer, Sensor,
 }

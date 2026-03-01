@@ -1,9 +1,15 @@
-import gleam/string
-import gleam/result
 import gleam/dynamic.{type DecodeError, type Dynamic, DecodeError, string}
+import gleam/list
+import gleam/result
+import gleam/string
 import glome/homeassistant/domain.{type Domain}
 
+pub fn main() {
+  todo
+}
+
 pub type EntityId {
+  /// The domain of the entity
   EntityId(domain: Domain, object_id: String)
 }
 
@@ -39,6 +45,11 @@ pub fn to_string(entity_id: EntityId) -> String {
   string.concat([domain.to_string(entity_id.domain), ".", entity_id.object_id])
 }
 
+// fn map_to_entity_id(entity_id_parts: #(String, String)) -> EntityId {
+//   EntityId(domain.from_string(entity_id_parts.0), entity_id_parts.1)
+// }
+
 fn map_to_entity_id(entity_id_parts: #(String, String)) -> EntityId {
-  EntityId(domain.from_string(entity_id_parts.0), entity_id_parts.1)
+  let #(domain_str, object_id) = entity_id_parts
+  EntityId(domain.from_string(domain_str), object_id)
 }

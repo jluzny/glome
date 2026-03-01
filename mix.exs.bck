@@ -1,0 +1,40 @@
+defmodule ExErMix.MixProject do
+  use Mix.Project
+
+  def project do
+    [
+      app: :glome,
+      version: "0.1.0",
+      elixir: "~> 1.16",
+      start_permanent: Mix.env() == :prod,
+      deps: deps(),
+      preferred_cli_env: [eunit: :test]
+      # eunit: [
+      #   verbose: false,
+      #   cover: false,
+      #   profile: false,
+      #   start: false,
+      #   color: false
+      # ]
+    ]
+  end
+
+  # Run "mix help compile.app" to learn about applications.
+  def application do
+    [
+      extra_applications: [:logger, :eunit]
+    ]
+  end
+
+  # Run "mix help deps" to learn about dependencies.
+  defp deps do
+    [
+      # {:mix_eunit, git: "https://github.com/dantswain/mix_eunit.git", branch: "master"}
+      # {:mix_eunit, "~> 0.2"}
+      {:mix_erlang_tasks, "0.1.0"}
+      # {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
+      # {:dep_from_hexpm, "~> 0.3.0"},
+      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+    ]
+  end
+end

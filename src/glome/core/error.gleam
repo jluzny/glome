@@ -1,12 +1,12 @@
-import gleam/string
 import gleam/dynamic.{type DecodeError, type DecodeErrors}
-import gleam/result
-import gleam/list
 import gleam/int
-import nerf/websocket.{type ConnectError, ConnectionFailed, ConnectionRefused}
 import gleam/json.{
   UnexpectedByte, UnexpectedEndOfInput, UnexpectedFormat, UnexpectedSequence,
 }
+import gleam/list
+import gleam/result
+import gleam/string
+import nerf/websocket.{type ConnectError, ConnectionFailed, ConnectionRefused}
 
 pub type GlomeError {
   WebsocketConnectionError(reason: String)

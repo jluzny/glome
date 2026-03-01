@@ -1,0 +1,33 @@
+-module(example_live_test).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+
+ -include_lib("eunit/include/eunit.hrl").
+
+-export([gla_test/0, main/0]).
+
+-spec handle_connection(glome@homeassistant:home_assistant()) -> glome@homeassistant:home_assistant().
+handle_connection(Ha) ->
+    gleam@io:debug(
+        <<"example_live_test.handle_connection: Connecting to Home Assistant"/utf8>>
+    ),
+    _ = {state_change_event, {entity_id, light, <<"TODO"/utf8>>}, none, none},
+    State_change_handler = fun(State_change_event, Ha@1) ->
+        _ = Ha@1,
+        gleam@io:debug(<<"State change event received"/utf8>>),
+        gleam@io:debug(State_change_event),
+        {ok, nil}
+    end,
+    Ha.
+
+-spec gla_test() -> {ok, nil} | {error, glome@core@error:glome_error()}.
+gla_test() ->
+    Config = {configuration,
+        <<"192.168.0.204"/utf8>>,
+        8123,
+        {access_token,
+            <<"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIwMmE2YWYwMGMzZGU0OTVkYjY4ZGYwNmIzNTExNzA1ZSIsImlhdCI6MTY4NzYyMjUxNywiZXhwIjoyMDAyOTgyNTE3fQ.oN7TLY7LuAeaZRAqy68UygAxVsCzK_4EjqWQKuKv7UI"/utf8>>}},
+    glome@homeassistant:connect(Config, fun handle_connection/1).
+
+-spec main() -> {ok, nil} | {error, glome@core@error:glome_error()}.
+main() ->
+    gla_test().

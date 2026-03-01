@@ -14,7 +14,7 @@ pub fn get_host() -> Option(String) {
 
 pub fn get_port() -> Option(Int) {
   get_env("PORT")
-  |> result.then(int.parse)
+  |> result.try(int.parse)
   |> option.from_result
 }
 
